@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+</html>
+<head>
+  <title>PONG</title>
+  <script src="jspsych-6.0.3/jspsych.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-html-keyboard-response.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-image-keyboard-response.js"></script>
+  <script src="pong.js"></script>
+
+  <link href="jspsych-6.0.3/css/jspsych.css" rel="stylesheet" type="text/css"></link>
+</head>
+
+<body style='background-color: black'>
+
+</body>
+<!--<audio loop id='a-music' src = 'sounds/music.mp3'></audio>-->
+<script>
+var timeStarted = new Date().valueOf()
+var gameDuration = 15*60*1000
+var gameWidth = 960, gameHeight = 600
+var timeline = []
+//var gameMusic = /*document.getElementById('a-music')*/ new Audio('sounds/music.mp3')
+
+//gameMusic.loop = true
+//gameMusic.src = 'sounds/music.mp3'
+//gameMusic.load()
+//gameMusic.play()
+
+var instructionsPt1 = {
+  type:"html-keyboard-response",
+  stimulus:"<img src='picture.png' height='" + gameHeight + "' style='position: absolute; top: 50%; left: 50%; margin-right:50%; transform: translate(-50%, -50%);></img>'",
+  on_finish: function(){//gameMusic.load()
+  /*gameMusic.play()*/}
+};
+timeline.push(instructionsPt1);
+
+var level = {
+  type:"pong",
+  stimulus:"<p>test</p>"
+}
+timeline.push(level)
+
+/*width and height: */
+/*var w=650, h=650;
+var game = {
+  type:"html-keyboard-response",
+  stimulus: "<!--main canvas where game happens:-->" +
+  "<canvas id='mainCanvas' height='" + h + "' width = '" + w + "'></canvas>" + "<button onclick='curLevel.beginGame()'>S T A R T</button>"
+  +
+  "<!--overlay canvas that doesn't need to be refreshed constantly:-->" +
+  //it may be good to not hard-code the top and left value but rather use variables...this will be decided later when we do more styling
+  "<canvas id='overlay' style='position:absolute; left: 0; top: 0; z-index:2' height='" + h + "' width = '" + w + "'></canvas>"
+  +
+  "<!--selection canvas for ball selection in defusal mode:-->" +
+  //it may be good to not hard-code the top and left value but rather use variables...this will be decided later when we do more styling
+  "<canvas id='selectionCanvas' style='position:absolute; left: 0; top: 0; z-index:1' height='" + h + "' width = '" + w + "'></canvas>"
+
+};*/
+
+
+/*var tutorial_loop = {
+    timeline: [
+      {
+        type:"mot-game-tutorial",
+        stimulus:"<p>test</p>",
+        duration: 15000,
+        ballSpeed: 0.07,
+        ballRadius: 'large',
+        maxUserDefinedObstacles: 1,
+        maxUserDefinedObstacleSegments: 3,
+        maxDistanceBetweenObstaclePixels:300,
+        minDistanceBetweenObstaclePixels: 66,
+        userObstacleThickness: 3,
+        vertWallThickness:48,  //16px thick border walls
+        horiWallThickness:16,
+        occludersEnabled: false,
+        invisibleOccluders: false,
+        implodeExplodeMode: false,
+        stochasticRobotPaths: false,
+        parametersForStochasticRobotPaths: {inertia: 0.95, springConstant: 0, accelerationStandardDeviation: 0.01, velocityMultipler: 1.030},
+        forceFields: false,
+        forceFieldStrength: 0.001,
+        occluderRectangles:[{x: generateRandomOccluderXCoordinate(/*put minimum occluder distance from wall here*//*100), y: 0, width: 45, height: gameHeight},{x: generateRandomOccluderXCoordinate(190), y: 0, width: 45, height: gameHeight}],
+        lives: true, //toggle whether the player has a fixed number of lives and the related gameplay aspects
+        numLives: 5,
+        maxLives: 6,
+        gameWidth: gameWidth,
+        gameHeight: gameHeight,
+        savedModel: [],
+        exitWhenOutOfLives: true
+      }],
+      loop_function: function(){
+        GlobalTester.after(window)
+        if(jsPsych.data.get().last(1).values()[0].restartTutorial === true){return true} else {return false}
+      }
+}
+
+timeline.push(tutorial_loop)
+*/
+/*var level1 = {
+  type:"mot-game",
+  stimulus:"<p>test</p>",
+  duration: 15000,
+  ballSpeed: 0.07,//jsPsych.timelineVariable("ballSpeed", true),
+  ballRadius: randomBallRadius(),
+  numRegularBalls: 4,
+  numExplodingBalls: 1,
+  maxUserDefinedObstacles: 1,
+  maxUserDefinedObstacleSegments: 3,
+  maxDistanceBetweenObstaclePixels:300,
+  minDistanceBetweenObstaclePixels: 66,
+  userObstacleThickness: 3,
+  vertWallThickness:48,  //16px thick border walls
+  horiWallThickness:16,
+  occludersEnabled: true,
+  notifyUserOfOccluders: false,
+  invisibleOccluders: true,
+  notifyUserOfInvisOccluders: false,
+  implodeExplodeMode: false,
+  notifyUserOfImplodeExplodeMode: false,
+  stochasticRobotPaths: false,
+  parametersForStochasticRobotPaths: {inertia: 0.95, springConstant: 0, accelerationStandardDeviation: 0.01, velocityMultipler: 1.030},
+  forceFields: false,
+  forceFieldStrength: 0.0006,
+  occluderRectangles:[{x: generateRandomOccluderXCoordinate(/*put minimum occluder distance from wall here*//*100), y: 0, width: 45, height: gameHeight},{x: generateRandomOccluderXCoordinate(190), y: 0, width: 45, height: gameHeight}],
+  lives: true, //toggle whether the player has a fixed number of lives and the related gameplay aspects
+  numLives: 5,
+  maxLives:6,
+  //replayMode: false,
+  replayModeParameters: /*{"ballInitialConditions":[
+			{
+				"explosive": false,
+				"position": [
+					452,
+					361
+				],
+				"velocity": [
+					0.03860096841357722,
+					-0.01048643111520854
+				],
+				"radius": 20
+			},
+			{
+				"explosive": false,
+				"position": [
+					614,
+					456
+				],
+				"velocity": [
+					0.013557549308971684,
+					0.037632337912157435
+				],
+				"radius": 20
+			},
+			{
+				"explosive": false,
+				"position": [
+					438,
+					348
+				],
+				"velocity": [
+					0.0351144783069237,
+					0.019156550139119124
+				],
+				"radius": 20
+			},
+			{
+				"explosive": false,
+				"position": [
+					388,
+					405
+				],
+				"velocity": [
+					0.03380436441892031,
+					0.021383754259550275
+				],
+				"radius": 20
+			},
+			{
+				"explosive": false,
+				"position": [
+					272,
+					618
+				],
+				"velocity": [
+					-0.03999344038568691,
+					-0.0007243798150881363
+				],
+				"radius": 20
+			},
+			{
+				"explosive": false,
+				"position": [
+					537,
+					595
+				],
+				"velocity": [
+					0.03944547382565874,
+					-0.0066373635330055246
+				],
+				"radius": 20
+			},
+			{
+				"explosive": false,
+				"position": [
+					568,
+					455
+				],
+				"velocity": [
+					0.02702510830056431,
+					0.029489718909185454
+				],
+				"radius": 20
+			},
+			{
+				"explosive": true,
+				"position": [
+					265,
+					315
+				],
+				"velocity": [
+					-0.03893091564541011,
+					0.009186065915829383
+				],
+				"radius": 20
+			},
+			{
+				"explosive": true,
+				"position": [
+					254,
+					269
+				],
+				"velocity": [
+					-0.026472597947135083,
+					-0.029986689679411756
+				],
+				"radius": 20
+			}
+		],
+		"ballSpeed": 0.04,
+		"maxObstacles": 1,
+		"maxObstacleSegments": 3,
+		"createdPoints": [
+			{
+				"position": [
+					256,
+					358
+				],
+				"timeCreated": 770.299999974668,
+				"eventType": "mousedown"
+			},
+			{
+				"position": [
+					330,
+					353
+				],
+				"timeCreated": 952.4000000092201,
+				"eventType": "mousemove"
+			},
+			{
+				"position": [
+					390,
+					300
+				],
+				"timeCreated": 1223.4000000171363,
+				"eventType": "mousemove"
+			},
+			{
+				"position": [
+					365,
+					160
+				],
+				"timeCreated": 4248.599999991711,
+				"eventType": "mousedown"
+			},
+			{
+				"position": [
+					438,
+					174
+				],
+				"timeCreated": 4422.69999999553,
+				"eventType": "mousemove"
+			},
+			{
+				"position": [
+					397,
+					326
+				],
+				"timeCreated": 7535.399999993388,
+				"eventType": "mousedown"
+			},
+			{
+				"position": [
+					398,
+					457
+				],
+				"timeCreated": 8227.399999974295,
+				"eventType": "mousemove"
+			},
+			{
+				"position": [
+					542,
+					290
+				],
+				"timeCreated": 10212.400000018533,
+				"eventType": "mousedown"
+			},
+			{
+				"position": [
+					391,
+					473
+				],
+				"timeCreated": 11276.000000012573,
+				"eventType": "mousedown"
+			},
+			{
+				"position": [
+					456,
+					446
+				],
+				"timeCreated": 11442.800000018906,
+				"eventType": "mousemove"
+			},
+			{
+				"position": [
+					520,
+					415
+				],
+				"timeCreated": 11546.199999982491,
+				"eventType": "mousemove"
+			},
+			{
+				"position": [
+					533,
+					111
+				],
+				"timeCreated": 13244.400000025053,
+				"eventType": "mousedown"
+			},
+			{
+				"position": [
+					605,
+					148
+				],
+				"timeCreated": 13466.2000000244,
+				"eventType": "mousemove"
+			},
+			{
+				"position": [
+					632,
+					209
+				],
+				"timeCreated": 13665.500000002794,
+				"eventType": "mousemove"
+			},
+			{
+				"position": [
+					413,
+					293
+				],
+				"timeCreated": 16554.699999978766,
+				"eventType": "mousedown"
+			},
+			{
+				"position": [
+					458,
+					376
+				],
+				"timeCreated": 7989.6999999764375,
+				"eventType": "mousedown"
+			},
+			{
+				"position": [
+					459,
+					392
+				],
+				"timeCreated": 8523.600000014994,
+				"eventType": "mousedown"
+			},
+			{
+				"position": [
+					626,
+					105
+				],
+				"timeCreated": 9725.700000009965,
+				"eventType": "mousedown"
+			}
+		]
+  }*//*null,
+  savedModel: [],
+exitWhenOutOfLives: true,
+  gameWidth: 960,
+  gameHeight: 600
+}
+//timeline.push(level1);
+loop_counter = 0
+num_reg_balls = 0
+var levels_loop = {
+  timeline: [{
+    type:"mot-game",
+    stimulus:"<p>test</p>",
+    levelNumber: function(){return loop_counter+1},
+    duration: 15000,
+    ballSpeed: 0.05, /*function(){var s = 0.06+loop_counter*0.00011
+  return s}*//*
+    ballRadius: randomBallRadius(),
+    numRegularBalls: function(){
+      console.log(loop_counter)
+      //increment every 2-3 levels with some randomness
+      num_reg_balls+=Math.round(Math.random())
+      return num_reg_balls
+    },
+    numExplodingBalls: function(){
+      //increment every 2-3 levels with some randomness
+      return 1+loop_counter/(2+Math.round(Math.random()))
+    },
+    maxUserDefinedObstacles: 1,
+    maxUserDefinedObstacleSegments: 3,
+    maxDistanceBetweenObstaclePixels:300,
+    minDistanceBetweenObstaclePixels: 66,
+    userObstacleThickness: 3,
+    vertWallThickness:48,  //16px thick border walls
+    horiWallThickness:16,
+    occludersEnabled: false,
+    notifyUserOfOccluders: false,
+    invisibleOccluders: true,
+    notifyUserOfInvisOccluders: false,
+    implodeExplodeMode: false,
+    notifyUserOfImplodeExplodeMode: false,
+    stochasticRobotPaths: false,
+    parametersForStochasticRobotPaths: {inertia: 0.95, springConstant: 0, accelerationStandardDeviation: 0.01, velocityMultipler: 1.030},
+    forceFields: false,
+    forceFieldStrength: 0.0006,
+    occluderRectangles:[{x: generateRandomOccluderXCoordinate(/*put minimum occluder distance from wall here*//*100), y: 0, width: 45, height: gameHeight},{x: generateRandomOccluderXCoordinate(190), y: 0, width: 45, height: gameHeight}],
+    lives: true, //toggle whether the player has a fixed number of lives and the related gameplay aspects
+    numLives: 5,
+    maxLives:6,
+    replayModeParameters: null,
+    savedModel: [],
+    exitWhenOutOfLives: true,
+    gameWidth: 960,
+    gameHeight: 600
+  }],
+
+  loop_function: function(){
+    if(jsPsych.data.get().last(1).values()[0].numLives > 0){
+      loop_counter++ //increment level number. loop counter is basically level number but is 0 for level 1, so level 1 is when loop_counter == 0
+    } else {
+      loop_counter = 0 //no previous loop has been done before
+      num_reg_balls = 0 //reset
+    }*/
+    //is the experiment duration over? if so return false, exiting the loop
+    /*var rn = new Date().valueOf()
+    if(rn-timeStarted > gameDuration){
+      return false
+    } else {
+      return true
+    }
+  }
+}
+*/
+
+//timeline.push(levels_loop)
+
+jsPsych.init({
+  timeline: timeline,
+  on_finish: function(){
+    jsPsych.data.displayData();
+  }
+})
+
+</script>
+</html>
