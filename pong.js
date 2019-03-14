@@ -4,21 +4,11 @@ jsPsych.plugins["pong"] = (function() {
   plugin.info = {
     name: 'pong',
     parameters: {
+      //humanPaddleSize:
       /*levelNumber: {
         type:jsPsych.plugins.parameterType.INT
       },
-      ballSpeed: {
-        type: jsPsych.plugins.parameterType.INT,
-        defualt: 0.04
-      },
-      numRegularBalls: {
-        type: jsPsych.plugins.parameterType.INT,
-        defualt: 2
-      },
-      numExplodingBalls: {
-        type: jsPsych.plugins.parameterType.INT,
-        defualt: 2
-      }*/
+      */
     }
   }
 
@@ -40,8 +30,12 @@ jsPsych.plugins["pong"] = (function() {
       this.y = y
       this.size = 20
 
-      this.xVelocity = 5
-      this.yVelocity = 5
+      //initialize with random velocity but par.ballSpeed speed
+      //velocity can't be entirely random: we don't want it to close to vertical at the beginning; constrain it to +-(angles between pi/4 and -pi/4)
+      var random1orNeg1 = Math.random() > 0.5 ? -1 : 1
+      var randomAngleInRange = Math.PI/4-Math.random()*Math.PI/2
+      this.xVelocity = random1orNeg1 * Math.cos(randomAngleInRange)*par.ballSpeed
+      this.yVelocity = random1orNeg1 * Math.sin(randomAngleInRange)*par.ballSpeed
 
       this.color = "white";
     }
@@ -54,7 +48,7 @@ jsPsych.plugins["pong"] = (function() {
       this.ball = new Ball(gameWidth/2, gameHeight/2)
       this.checkForCollisions = function(){
         //if it collides with AI paddle
-        if(this.ball.x <= this.aiPaddle.width && this.ball.y >= this.aiPaddle.y && this.ball.y+this.ball.size <= this.aiPaddle.y+this.aiPaddle.length){
+        if(this.ball.x <= this.aiPaddle.width && this.ball.y + this.ball.size >= this.aiPaddle.y && this.ball.y <= this.aiPaddle.y+this.aiPaddle.length){
           this.ball.x = this.aiPaddle.width
           this.handleCollision(this.ball, this.aiPaddle)
           //if it collides with left wall
@@ -62,7 +56,7 @@ jsPsych.plugins["pong"] = (function() {
           this.ball.x = 0//reset it to 0 in case it went past so it doesn't collide weirdly
           this.handleCollision(this.ball, null, "left")
           //if it collides with human paddle
-        } else if(this.ball.x+this.ball.size >= gameWidth-this.hPaddle.width && this.ball.y >= this.hPaddle.y && this.ball.y+this.ball.size <= this.hPaddle.y+this.hPaddle.length){
+        } else if(this.ball.x+this.ball.size >= gameWidth-this.hPaddle.width && this.ball.y +this.ball.size >= this.hPaddle.y && this.ball.y <= this.hPaddle.y+this.hPaddle.length){
           this.ball.x = gameWidth-this.hPaddle.width-this.ball.size
           this.handleCollision(this.ball, this.hPaddle)
           //with right wall
@@ -203,7 +197,7 @@ jsPsych.plugins["pong"] = (function() {
           //0 is upper boundary for paddle position
           if(y < 0){y = 0}
           //gameHeight-paddle.length is lower boundary
-          if(y + model.hPaddle.length > gameHeight){y = gameHeight - model.hPaddle.length}
+          if(y + model.aiPaddle.length > gameHeight){y = gameHeight - model.aiPaddle.length}
 
           return y
         }
@@ -221,8 +215,8 @@ jsPsych.plugins["pong"] = (function() {
     }
 
     function HumanPaddle(yCoord, width, length){
-      this.width = width
-      this.length = length
+      this.width = width*par.humanPaddleSize
+      this.length = length*par.humanPaddleSize
 
       this.y = yCoord
 
@@ -233,8 +227,8 @@ jsPsych.plugins["pong"] = (function() {
     }
 
     function AIPaddle(yCoord, width, length){
-      this.width = width
-      this.length = length
+      this.width = width*par.aiPaddleSize
+      this.length = length*par.aiPaddleSize
 
       this.y = yCoord
 
