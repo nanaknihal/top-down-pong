@@ -24,11 +24,12 @@ jsPsych.plugins["pong"] = (function() {
     "<!--overlay canvas that doesn't need to be refreshed constantly:-->" +
     "<canvas id='overlay' style='position:absolute; left: 0; top: 0; z-index:4' height='" + gameHeight + "' width = '" + gameWidth + "'></canvas>"
 
-    function Ball(x,y){
+    function Ball(x,y, isBackground){
       //x,y is top-left corner of rectangle representing this ball. size is the length of all the sides of this rectangle (it's a square)
       this.x = x
       this.y = y
       this.size = 20
+      this.isBackground = isBackground
 
       //initialize with random velocity but par.ballSpeed speed
       //velocity can't be entirely random: we don't want it to close to vertical at the beginning; constrain it to +-(angles between pi/4 and -pi/4)
@@ -37,7 +38,11 @@ jsPsych.plugins["pong"] = (function() {
       this.xVelocity = random1orNeg1 * Math.cos(randomAngleInRange)*par.ballSpeed
       this.yVelocity = random1orNeg1 * Math.sin(randomAngleInRange)*par.ballSpeed
 
-      this.color = "white";
+      if(isBackground === true){
+        this.color = "pink"
+      } else{
+        this.color = "white";
+      }
     }
 
     function Model(difficulty){
@@ -46,32 +51,38 @@ jsPsych.plugins["pong"] = (function() {
       //ai paddle
       this.aiPaddle = new AIPaddle(gameHeight/2, 10, 100)
       this.ball = new Ball(gameWidth/2, gameHeight/2)
+      this.backgroundBall = new Ball(gameWidth/2, gameHeight/2, true)
       this.checkForCollisions = function(){
+        var balls = [this.ball, this.backgroundBall]
+        for(var i=0; i<balls.length;i++){
+          var b = balls[i]
         //if it collides with AI paddle
-        if(this.ball.x <= this.aiPaddle.width && this.ball.y + this.ball.size >= this.aiPaddle.y && this.ball.y <= this.aiPaddle.y+this.aiPaddle.length){
-          this.ball.x = this.aiPaddle.width
-          this.handleCollision(this.ball, this.aiPaddle)
+        if(b.isBackground != true && b.x <= this.aiPaddle.width && b.y + b.size >= this.aiPaddle.y && b.y <= this.aiPaddle.y+this.aiPaddle.length){
+          b.x = this.aiPaddle.width
+          this.handleCollision(b, this.aiPaddle)
           //if it collides with left wall
-        } else if(this.ball.x <= 0){
-          this.ball.x = 0//reset it to 0 in case it went past so it doesn't collide weirdly
-          this.handleCollision(this.ball, null, "left")
+        } else if(b.x <= 0){
+          b.x = 0//reset it to 0 in case it went past so it doesn't collide weirdly
+          this.handleCollision(b, null, "left")
           //if it collides with human paddle
-        } else if(this.ball.x+this.ball.size >= gameWidth-this.hPaddle.width && this.ball.y +this.ball.size >= this.hPaddle.y && this.ball.y <= this.hPaddle.y+this.hPaddle.length){
-          this.ball.x = gameWidth-this.hPaddle.width-this.ball.size
-          this.handleCollision(this.ball, this.hPaddle)
+        } else if(b.isBackground != true && b.x+b.size >= gameWidth-this.hPaddle.width && b.y +b.size >= this.hPaddle.y && b.y <= this.hPaddle.y+this.hPaddle.length){
+          b.x = gameWidth-this.hPaddle.width-b.size
+          this.handleCollision(b, this.hPaddle)
           //with right wall
-        } else if(this.ball.x+this.ball.size >= gameWidth){
-          this.ball.x = gameWidth-this.ball.size
-          this.handleCollision(this.ball, null, "right")
+        } else if(b.x+b.size >= gameWidth){
+          b.x = gameWidth-b.size
+          this.handleCollision(b, null, "right")
           //top wall
-        } else if(this.ball.y <=0){
-          this.ball.y=0
-          this.handleCollision(this.ball, null, "top")
+        } else if(b.y <=0){
+          b.y=0
+          this.handleCollision(b, null, "top")
           //bottom
-        } else if(this.ball.y + this.ball.size >= gameHeight){
-          this.ball.y=gameHeight-this.ball.size
-          this.handleCollision(this.ball, null, "bottom")
+        } else if(b.y + b.size >= gameHeight){
+          b.y=gameHeight-b.size
+          this.handleCollision(b, null, "bottom")
         }
+      }
+
       }
       this.handleCollision = function(ball, paddle, wall){
         if(wall == "top" || wall == "bottom"){
@@ -80,18 +91,26 @@ jsPsych.plugins["pong"] = (function() {
           ball.xVelocity *=-1
         } else if(wall == "left"){
           ball.xVelocity*=-1
-          controller.humanWon();
+          if(ball.isBackground != true){
+            controller.humanWon();
+          }
         } else if(wall == "right"){
-          ball.xvelocity *=-1
-          controller.aiWon();
+          ball.xVelocity *=-1
+          if(ball.isBackground != true){
+            controller.aiWon();
+          }
         }
       }
       this.update = function(){
         this.checkForCollisions();
-        var b = this.ball
-        b.x+=b.xVelocity;
-        b.y+=b.yVelocity;
-          }
+        //this.backgroundBall.randomlyShiftDirection()
+        var balls = [this.ball, this.backgroundBall]
+        for(var i=0; i<balls.length;i++){
+          var b = balls[i]
+          b.x+=b.xVelocity;
+          b.y+=b.yVelocity;
+        }
+      }
 
     }
 
@@ -113,9 +132,10 @@ jsPsych.plugins["pong"] = (function() {
         mctx.closePath()
 
       }
-      this.drawBall = function(){
+      this.drawBall = function(theBall){
         var mctx = this.mainctx
-        var b = model.ball
+        var b = theBall
+
         mctx.beginPath()
         mctx.fillStyle = b.color
         mctx.rect(b.x, b.y, b.size, b.size)
@@ -145,7 +165,8 @@ jsPsych.plugins["pong"] = (function() {
         var m = this.mainctx
         m.clearRect(0,0,gameWidth, gameHeight)
         this.drawBorders()
-        this.drawBall()
+        this.drawBall(model.ball)
+        this.drawBall(model.backgroundBall)
         this.drawHumanPaddle()
         this.drawAIPaddle()
       }
