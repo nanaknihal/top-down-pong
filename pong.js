@@ -13,8 +13,9 @@ jsPsych.plugins["pong"] = (function() {
   }
 
   plugin.trial = function(display_element, trial) {
+    document.body.style.cursor="none";
     var par = trial
-    //var w=par.gameWidth, h=par.gameHeight;
+    var gameWidth=par.gameWidth, gameHeight=par.gameHeight;
     display_element.innerHTML =
     "<div id='gameContainer' style='position: absolute; top: 50%; left: 50%; margin-right:50%; transform: translate(-50%, -50%); height: " + gameHeight + "px; width: " + gameWidth + "px; vertical-align: middle'>" +
     //"<!-background image:--><img src='robomb-pngs/floor.png' height='" + h + "' width='" + w + "' style='position:absolute; margin:auto; z-index:-100'></img>" +
@@ -24,6 +25,7 @@ jsPsych.plugins["pong"] = (function() {
     "<!--overlay canvas that doesn't need to be refreshed constantly:-->" +
     "<canvas id='overlay' style='position:absolute; left: 0; top: 0; z-index:4' height='" + gameHeight + "' width = '" + gameWidth + "'></canvas>"
 
+    var beginTime = Date.now()
     function Ball(x,y, isBackground){
       //x,y is top-left corner of rectangle representing this ball. size is the length of all the sides of this rectangle (it's a square)
       this.x = x
@@ -39,7 +41,7 @@ jsPsych.plugins["pong"] = (function() {
       this.yVelocity = random1orNeg1 * Math.sin(randomAngleInRange)*par.ballSpeed
 
       if(isBackground === true){
-        this.color = "grey"
+        this.color = "pink"
       } else{
         this.color = "white";
       }
@@ -111,7 +113,7 @@ jsPsych.plugins["pong"] = (function() {
         this.checkForCollisions();
         //shift direction every once in a while:
         if(Math.random() > 0.98){
-        this.backgroundBall.randomlyShiftDirection()
+        //this.backgroundBall.randomlyShiftDirection()
       }
         var balls = [this.ball, this.backgroundBall]
         for(var i=0; i<balls.length;i++){
@@ -149,8 +151,12 @@ jsPsych.plugins["pong"] = (function() {
         mctx.fillStyle = b.color
         mctx.rect(b.x, b.y, b.size, b.size)
         mctx.fill()
+        //notify the user where target is for first 2 seconds:
+        if(Date.now() - beginTime < 2000 && !b.isBackground){
+          mctx.font = "11px Courier New"
+          mctx.fillText("target", b.x-10, b.y-10)
+        }
         mctx.closePath()
-        console.log(b)
       }
       this.drawHumanPaddle = function(){
         var mctx = this.mainctx
@@ -183,6 +189,19 @@ jsPsych.plugins["pong"] = (function() {
 
     }
     function Controller(){
+      if(par.keyboardControl){
+      /*Keyboard Control*/
+
+        document.addEventListener("keydown", function(event){
+          if(event.key == "ArrowUp" && !model.hPaddle.movingUp){
+            model.hPaddle.moveUp()
+          } else if(event.key == "ArrowDown" && !model.hPaddle.movingDown){
+            model.hPaddle.moveDown()
+          }
+      })
+    }
+    if(par.mouseControl){
+      /*Mouse control*/
       //when the mouse is moved, tell the human paddle to change position
       document.addEventListener("mousemove", function(event){
         var gameRect = document.getElementById("gameContainer").getBoundingClientRect()
@@ -195,7 +214,7 @@ jsPsych.plugins["pong"] = (function() {
         model.hPaddle.updatePosition(mouseYInGameCoord)
 
       })
-
+    }
       //create a custom event to move the paddle. to be consistent, ai and human paddles alike should be moved by events
       //there could be multiple events on a setInterval so the motion is more variable, not just linear
       document.addEventListener("aiMove", function(event){model.aiPaddle.updatePosition(event.moveToY)}, false)
@@ -252,6 +271,51 @@ jsPsych.plugins["pong"] = (function() {
 
       this.updatePosition = function(newY){
         this.y = newY
+      }
+
+      this.movingUp = false
+      this.movingDown = false
+
+      this.moveUp = function(){
+        this.movingUp = true
+          requestAnimationFrame(function(){
+            if(model.hPaddle.movingUp == true){
+
+              //only move it to the edge, no further
+              var moveIncrement = 10
+              if(model.hPaddle.y - moveIncrement < 0){
+                model.hPaddle.y = 0
+              } else{
+                model.hPaddle.y -= moveIncrement
+              }
+
+              window.requestAnimationFrame(model.hPaddle.moveUp)
+            }
+          })
+
+        document.addEventListener("keyup", function(){
+          model.hPaddle.movingUp = false
+        })
+      }
+      this.moveDown = function(){
+        this.movingDown = true
+          requestAnimationFrame(function(){
+            if(model.hPaddle.movingDown == true){
+
+              //only move it to the edge, no further
+              var moveIncrement = 10
+              if(model.hPaddle.y + model.hPaddle.length + moveIncrement > gameHeight){
+                model.hPaddle.y = gameHeight-model.hPaddle.length
+              } else{
+                model.hPaddle.y += moveIncrement
+              }
+              window.requestAnimationFrame(model.hPaddle.moveDown)
+            }
+          })
+
+        document.addEventListener("keyup", function(){
+          model.hPaddle.movingDown = false
+        })
       }
 
     }
