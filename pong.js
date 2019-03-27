@@ -39,9 +39,15 @@ jsPsych.plugins["pong"] = (function() {
       this.yVelocity = random1orNeg1 * Math.sin(randomAngleInRange)*par.ballSpeed
 
       if(isBackground === true){
-        this.color = "pink"
+        this.color = "grey"
       } else{
         this.color = "white";
+      }
+      this.randomlyShiftDirection = function(){
+        //maintain speed but randomly increment velocity
+        var randomAngle = Math.random()*2*Math.PI
+        this.xVelocity = par.ballSpeed*Math.cos(randomAngle)
+        this.yVelocity = par.ballSpeed*Math.sin(randomAngle)
       }
     }
 
@@ -103,7 +109,10 @@ jsPsych.plugins["pong"] = (function() {
       }
       this.update = function(){
         this.checkForCollisions();
-        //this.backgroundBall.randomlyShiftDirection()
+        //shift direction every once in a while:
+        if(Math.random() > 0.98){
+        this.backgroundBall.randomlyShiftDirection()
+      }
         var balls = [this.ball, this.backgroundBall]
         for(var i=0; i<balls.length;i++){
           var b = balls[i]
