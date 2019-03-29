@@ -4,7 +4,7 @@
   <title>PONG</title>
   <script src="jspsych-6.0.3/jspsych.js"></script>
   <script src="jspsych-6.0.3/plugins/jspsych-html-keyboard-response.js"></script>
-  <script src="jspsych-6.0.3/plugins/jspsych-image-keyboard-response.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-html-button-response.js"></script>
   <script src="pong.js"></script>
 
   <link href="jspsych-6.0.3/css/jspsych.css" rel="stylesheet" type="text/css"></link>
@@ -13,7 +13,6 @@
 <body style='background-color: black'>
 
 </body>
-<!--<audio loop id='a-music' src = 'sounds/music.mp3'></audio>-->
 <script>
 
 
@@ -21,35 +20,42 @@ var timeStarted = new Date().valueOf()
 var gameDuration = 15*60*1000
 var gameWidth = 960, gameHeight = 600
 var timeline = []
-//var gameMusic = /*document.getElementById('a-music')*/ new Audio('sounds/music.mp3')
-
-//gameMusic.loop = true
-//gameMusic.src = 'sounds/music.mp3'
-//gameMusic.load()
-//gameMusic.play()
-
-var instructionsPt1 = {
+var colorBlindSafeColorPairs = [['white', 'grey'], ['white', 'red'], ['white', 'green'], ['white', 'blue'], ['white', 'pink'], ['grey', 'white'], ['grey', 'red'], ['grey', 'blue'], ['red', 'white'], ['red', 'blue'], ['green', 'white'], ['green', 'blue'], ['blue', 'white'], ['blue', 'white'], ['blue', 'red'], ['blue', 'pink'], ['blue', 'grey']]
+var paddleSizes = [0.5, 1.2, 1.9]
+var welcome = {
   type:"html-keyboard-response",
-  stimulus:"<img src='picture.png' height='" + gameHeight + "' style='position: absolute; top: 50%; left: 50%; margin-right:50%; transform: translate(-50%, -50%);></img>'",
+  stimulus:"<img src='welcome.png' height='" + gameHeight + "' style='position: absolute; top: 50%; left: 50%; margin-right:50%; transform: translate(-50%, -50%);></img>'<br />",
   on_finish: function(){//gameMusic.load()
   /*gameMusic.play()*/}
 };
-timeline.push(instructionsPt1);
+timeline.push(welcome);
 
+var colorPair = colorBlindSafeColorPairs[Math.floor(Math.random()*colorBlindSafeColorPairs.length)]
 var level = {
   type:"pong",
   stimulus:"<p>test</p>",
-  ballSpeed: 9,
-  humanPaddleSize:1,
+  ballSpeed: 10,
+  bgBallColor: colorPair[0],
+  targetBallColor: colorPair[1],
+  humanPaddleSize:paddleSizes[Math.floor(Math.random()*paddleSizes.length)],
   aiPaddleSize:1,
   gameWidth:500,
   gameHeight:400,
-  keyboardControl: true,
+  randomBackgroundBallMotion: false,
+  keyboardControl: false,
   mouseControl: true
+
 }
 timeline.push(level)
 
-/*width and height: */
+var response = {
+  type: 'html-button-response',
+  stimulus: '',
+  choices: ['Background', 'Target', 'Neither'],
+  prompt: "<p>Which ball was faster?</p>"
+}
+timeline.push(response)
+///*width and height: */
 /*var w=650, h=650;
 var game = {
   type:"html-keyboard-response",

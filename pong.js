@@ -16,6 +16,12 @@ jsPsych.plugins["pong"] = (function() {
     document.body.style.cursor="none";
     var par = trial
     var gameWidth=par.gameWidth, gameHeight=par.gameHeight;
+    var data = {
+      parameters: par,
+      collected: {
+        humanScore: 0,
+        aiScore: 0
+      }}
     display_element.innerHTML =
     "<div id='gameContainer' style='position: absolute; top: 50%; left: 50%; margin-right:50%; transform: translate(-50%, -50%); height: " + gameHeight + "px; width: " + gameWidth + "px; vertical-align: middle'>" +
     //"<!-background image:--><img src='robomb-pngs/floor.png' height='" + h + "' width='" + w + "' style='position:absolute; margin:auto; z-index:-100'></img>" +
@@ -41,9 +47,9 @@ jsPsych.plugins["pong"] = (function() {
       this.yVelocity = random1orNeg1 * Math.sin(randomAngleInRange)*par.ballSpeed
 
       if(isBackground === true){
-        this.color = "pink"
+        this.color = par.bgBallColor
       } else{
-        this.color = "white";
+        this.color = par.targetBallColor;
       }
       this.randomlyShiftDirection = function(){
         //maintain speed but randomly increment velocity
@@ -54,6 +60,7 @@ jsPsych.plugins["pong"] = (function() {
     }
 
     function Model(difficulty){
+      this.bouncesOnHumanSideSoFar = 0
       //human paddle
       this.hPaddle = new HumanPaddle(gameHeight/2, 10, 100)
       //ai paddle
@@ -108,13 +115,19 @@ jsPsych.plugins["pong"] = (function() {
             controller.aiWon();
           }
         }
+
+        if((ball.isBackground != true) && wall == "right" || paddle === model.hPaddle){
+          model.bouncesOnHumanSideSoFar++
+        }
       }
       this.update = function(){
         this.checkForCollisions();
+        if(par.randomBackgroundBallMotion){
+          if(Math.random() > 0.98){
+            this.backgroundBall.randomlyShiftDirection()
+          }
+        }
         //shift direction every once in a while:
-        if(Math.random() > 0.98){
-        //this.backgroundBall.randomlyShiftDirection()
-      }
         var balls = [this.ball, this.backgroundBall]
         for(var i=0; i<balls.length;i++){
           var b = balls[i]
@@ -137,11 +150,22 @@ jsPsych.plugins["pong"] = (function() {
         mctx.rect(0, gameHeight-1, gameWidth, 1)
         mctx.rect(gameWidth-1, 1, 1, gameHeight)
         mctx.fill()
-        mctx.textAlign = "center"
-        mctx.font = "54px Courier New"
-        mctx.fillText('PONG', gameWidth/2, 56)
         mctx.closePath()
 
+      }
+      this.drawUpperText = function(){
+        var mctx = this.mainctx
+        mctx.beginPath()
+        mctx.fillStyle = "white"
+        mctx.textAlign = "center"
+        mctx.font = "54px Courier New"
+        //draw "PONG" for 2 seconds
+        if(Date.now() - beginTime < 2000){
+          mctx.fillText('PONG', gameWidth/2, 56)
+        } else {
+          mctx.fillText(data.collected.aiScore+'|'+data.collected.humanScore, gameWidth/2, 56)
+        }
+        mctx.closePath()
       }
       this.drawBall = function(theBall){
         var mctx = this.mainctx
@@ -153,7 +177,8 @@ jsPsych.plugins["pong"] = (function() {
         mctx.fill()
         //notify the user where target is for first 2 seconds:
         if(Date.now() - beginTime < 2000 && !b.isBackground){
-          mctx.font = "11px Courier New"
+          mctx.fillStyle="white"
+          mctx.font = "13px Courier New"
           mctx.fillText("target", b.x-10, b.y-10)
         }
         mctx.closePath()
@@ -162,16 +187,20 @@ jsPsych.plugins["pong"] = (function() {
         var mctx = this.mainctx
         var p = model.hPaddle
         mctx.beginPath()
-        mctx.fillStyle = "#"+((1<<24)*Math.random()|0).toString(16) //random color, from ZPiDER's answer at https://stackoverflow.com/questions/1484506/random-color-generator
+        mctx.fillStyle = "white"//"#"+((1<<24)*Math.random()|0).toString(16) //random color, from ZPiDER's answer at https://stackoverflow.com/questions/1484506/random-color-generator
         mctx.rect(gameWidth-p.width, p.y, p.width, p.length)
         mctx.fill()
+        if(Date.now() - beginTime < 2000){
+          mctx.font = "13px Courier New"
+          mctx.fillText("your paddle", gameWidth-100, p.y+p.length/2)
+        }
         mctx.closePath()
       }
       this.drawAIPaddle = function(){
         var mctx = this.mainctx
         var p = model.aiPaddle
         mctx.beginPath()
-        mctx.fillStyle = "#"+((1<<24)*Math.random()|0).toString(16) //random color, from ZPiDER's answer at https://stackoverflow.com/questions/1484506/random-color-generator
+        mctx.fillStyle = "white"//"#"+((1<<24)*Math.random()|0).toString(16) //random color, from ZPiDER's answer at https://stackoverflow.com/questions/1484506/random-color-generator
         mctx.rect(0, p.y, p.width, p.length)
         mctx.fill()
         mctx.closePath()
@@ -179,6 +208,8 @@ jsPsych.plugins["pong"] = (function() {
       this.update = function(){
         var m = this.mainctx
         m.clearRect(0,0,gameWidth, gameHeight)
+
+        this.drawUpperText()
         this.drawBorders()
         this.drawBall(model.ball)
         this.drawBall(model.backgroundBall)
@@ -190,34 +221,17 @@ jsPsych.plugins["pong"] = (function() {
     }
     function Controller(){
       if(par.keyboardControl){
-      /*Keyboard Control*/
-
-        document.addEventListener("keydown", function(event){
-          if(event.key == "ArrowUp" && !model.hPaddle.movingUp){
-            model.hPaddle.moveUp()
-          } else if(event.key == "ArrowDown" && !model.hPaddle.movingDown){
-            model.hPaddle.moveDown()
-          }
-      })
+        document.addEventListener("keydown", arrowKeyPressed)
     }
     if(par.mouseControl){
-      /*Mouse control*/
       //when the mouse is moved, tell the human paddle to change position
-      document.addEventListener("mousemove", function(event){
-        var gameRect = document.getElementById("gameContainer").getBoundingClientRect()
-        var mouseYInGameCoord = event.clientY - gameRect.top
-        //0 is upper boundary for paddle position
-        if(mouseYInGameCoord < 0){mouseYInGameCoord = 0}
-        //gameHeight-paddle.length is lower boundary
-        if(mouseYInGameCoord + model.hPaddle.length > gameHeight){mouseYInGameCoord = gameHeight - model.hPaddle.length}
-        //move the human paddle
-        model.hPaddle.updatePosition(mouseYInGameCoord)
-
-      })
+      document.addEventListener("mousemove", mouseMoved)
     }
+
+
       //create a custom event to move the paddle. to be consistent, ai and human paddles alike should be moved by events
       //there could be multiple events on a setInterval so the motion is more variable, not just linear
-      document.addEventListener("aiMove", function(event){model.aiPaddle.updatePosition(event.moveToY)}, false)
+      document.addEventListener("aiMove", aiMoved)
 
       this.AI = {
         paddle: model.aiPaddle,
@@ -242,7 +256,7 @@ jsPsych.plugins["pong"] = (function() {
         nextYToMoveTo: model.aiPaddle.y,
         calculateNextY: function(){
           //make paddle movement smooth; gradually move to intersection point (and maybe make mistakes?)
-          var y = this.paddle.y + (this.ball.y - this.paddle.y)^4
+          var y = this.paddle.y + ((this.ball.y - (this.paddle.y+this.paddle.length/2))/9)^3
           //0 is upper boundary for paddle position
           if(y < 0){y = 0}
           //gameHeight-paddle.length is lower boundary
@@ -255,16 +269,16 @@ jsPsych.plugins["pong"] = (function() {
       }
 
       this.humanWon = function(){
-        alert("You beat this AI...but can you beat the robot apocolypse?")
+        data.collected.humanScore++
       }
 
       this.aiWon = function(){
-        alert("You suck")
+        data.collected.aiScore++
       }
     }
 
     function HumanPaddle(yCoord, width, length){
-      this.width = width*par.humanPaddleSize
+      this.width = width
       this.length = length*par.humanPaddleSize
 
       this.y = yCoord
@@ -328,10 +342,34 @@ jsPsych.plugins["pong"] = (function() {
 
       this.updatePosition = function(newY){
         this.y = newY
-        //alert('s')
       }
 
     }
+
+    /*These 3 functions should be in controller but need to exist when a Controller is initialized, so are separate:*/
+    arrowKeyPressed = function(event){
+      if(event.key == "ArrowUp" && !model.hPaddle.movingUp){
+        model.hPaddle.moveUp()
+      } else if(event.key == "ArrowDown" && !model.hPaddle.movingDown){
+        model.hPaddle.moveDown()
+      }
+    }
+
+    mouseMoved = function(event){
+      var gameRect = document.getElementById("gameContainer").getBoundingClientRect()
+      var mouseYInGameCoord = event.clientY - gameRect.top
+      //0 is upper boundary for paddle position
+      if(mouseYInGameCoord < 0){mouseYInGameCoord = 0}
+      //gameHeight-paddle.length is lower boundary
+      if(mouseYInGameCoord + model.hPaddle.length > gameHeight){mouseYInGameCoord = gameHeight - model.hPaddle.length}
+      //move the human paddle
+      model.hPaddle.updatePosition(mouseYInGameCoord)
+
+    }
+
+    aiMoved = function(event){model.aiPaddle.updatePosition(event.moveToY)}
+
+    /**/
 
     function updateGame(currentTime){
       //curLevel.curTime = currentTime
@@ -340,7 +378,19 @@ jsPsych.plugins["pong"] = (function() {
           model.update()
           view.update()
           controller.AI.meetBall()
+          //end the game and ask the Ultimate Question after sufficient player-side bounces:
+          if(model.bouncesOnHumanSideSoFar  >= 6){
+            delete(model)
+            delete(view)
+            delete(controller)
+            jsPsych.finishTrial(data)
+            //this will clear any remnant event listeners:
+            document.removeEventListener("keydown", arrowKeyPressed)
+            document.removeEventListener("mousemove", mouseMoved)
+            document.removeEventListener("aiMove", aiMoved)
+          } else{
           window.requestAnimationFrame(updateGame)
+        }
       })
       //}
     }
