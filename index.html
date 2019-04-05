@@ -4,6 +4,7 @@
   <title>PONG</title>
   <script src="jspsych-6.0.3/jspsych.js"></script>
   <script src="jspsych-6.0.3/plugins/jspsych-html-keyboard-response.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-html-slider-response.js"></script>
   <script src="jspsych-6.0.3/plugins/jspsych-html-button-response.js"></script>
   <script src="pong.js"></script>
 
@@ -20,8 +21,10 @@ var timeStarted = new Date().valueOf()
 var gameDuration = 15*60*1000
 var gameWidth = 960, gameHeight = 600
 var timeline = []
-var colorBlindSafeColorPairs = [['white', 'grey'], ['white', 'red'], ['white', 'green'], ['white', 'blue'], ['white', 'pink'], ['grey', 'white'], ['grey', 'red'], ['grey', 'blue'], ['red', 'white'], ['red', 'blue'], ['green', 'white'], ['green', 'blue'], ['blue', 'white'], ['blue', 'white'], ['blue', 'red'], ['blue', 'pink'], ['blue', 'grey']]
+var colorBlindSafeColorPairs = [['white', 'grey'], ['white', 'red'], ['white', 'green'], ['white', 'blue'], ['white', 'pink'], ['grey', 'white'], ['grey', 'red'], ['grey', 'blue'], ['red', 'white'], ['red', 'blue'], ['green', 'white'], ['green', 'blue'], ['blue', 'white'], ['blue', 'white'], ['blue', 'red'], ['blue', 'pink'], ['blue', 'grey'], ['chartreuse', 'grey'], ['chartreuse', 'yellow'], ['chartreuse', 'white'], ['chartreuse', 'blue'], ['chartreuse', 'grey'], ['magenta', 'white'], ['magenta', 'grey'], ['magenta', 'yellow'], ['magenta', 'red'], ['cyan', 'grey'], ['cyan', 'white'], ['white', 'cyan'], ['grey', 'cyan'], ['grey', 'chartreuse'], ['yellow', 'chartreuse'], ['white', 'chartreuse'], ['blue', 'chartreuse'], ['white', 'magenta'], ['grey', 'magenta'], ['yellow', 'magenta'], ['red', 'magenta']]
 var paddleSizes = [0.5, 1.2, 1.9]
+var ballSpeeds = [4, 10, 16]
+//var goodColors = [magenta, yellow];
 var welcome = {
   type:"html-keyboard-response",
   stimulus:"<img src='welcome.png' height='" + gameHeight + "' style='position: absolute; top: 50%; left: 50%; margin-right:50%; transform: translate(-50%, -50%);></img>'<br />",
@@ -34,7 +37,7 @@ var colorPair = colorBlindSafeColorPairs[Math.floor(Math.random()*colorBlindSafe
 var level = {
   type:"pong",
   stimulus:"<p>test</p>",
-  ballSpeed: 10,
+  ballSpeed: ballSpeeds[Math.floor(Math.random()*ballSpeeds.length)],
   bgBallColor: colorPair[0],
   targetBallColor: colorPair[1],
   humanPaddleSize:paddleSizes[Math.floor(Math.random()*paddleSizes.length)],
@@ -55,6 +58,14 @@ var response = {
   prompt: "<p>Which ball was faster?</p>"
 }
 timeline.push(response)
+
+var questionnaire = {
+    type: 'html-slider-response',
+    stimulus: '<p>Running</p>',
+    labels: ['One of my best runs', 'One of my worst'],
+    prompt: "<p>How well do you think you did?</p>"
+}
+timeline.push(questionnaire)
 ///*width and height: */
 /*var w=650, h=650;
 var game = {
