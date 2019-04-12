@@ -117,7 +117,7 @@ jsPsych.plugins["pong"] = (function() {
           if(ball.isBackground != true){
             controller.aiWon();
             //if it's half the total bounces, ask the question:
-            if(this.bouncesOnHumanSideSoFar >= maxBouncesOnHumanSide / 2){controller.askQuestion()}
+            if(this.bouncesOnHumanSideSoFar >= Math.floor(maxBouncesOnHumanSide / 2)){controller.askQuestion()}
           }
         }
 
@@ -232,6 +232,7 @@ jsPsych.plugins["pong"] = (function() {
         octx.font = "17px Courier New"
 
         if(par.tutorial){alert('Now, please press the key corresponding to which ball is moving faster, as soon as you can make a guess. 1=target 2=background 3=neither')}
+        octx.fillText("Choose the faster ball:", gameWidth/2, overlay.height*0.22)
         octx.fillText("1=target 2=background 3=neither", gameWidth/2, overlay.height*0.88)
         //"press a key corresponding to which ball is moving faster: 1=target, 2=background, 3=neither"
         octx.closePath()
@@ -315,19 +316,16 @@ jsPsych.plugins["pong"] = (function() {
             data.collected.guess = '1'
             document.removeEventListener('keydown', controller.registerAnswer)
             view.removeQuestion()
-            alert(data.collected.guess)
             break;
           case '2':
             data.collected.guess = '2'
             document.removeEventListener('keydown', controller.registerAnswer)
             view.removeQuestion()
-            alert(data.collected.guess)
             break;
           case '3':
             data.collected.guess = '3'
             document.removeEventListener('keydown', controller.registerAnswer)
             view.removeQuestion()
-            alert(data.collected.guess)
             break;
         }
       }
