@@ -16,7 +16,7 @@ jsPsych.plugins["pong"] = (function() {
     document.body.style.cursor="none"
     var par = trial
     var gameWidth=par.gameWidth, gameHeight=par.gameHeight
-    var maxBouncesOnHumanSide = par.tutorial ? 11 : Math.floor(par.ballSpeed/1.7)
+    var maxBouncesOnHumanSide = par.tutorial ? 21 : Math.floor(par.ballSpeed/1.7)
     var introTextStopTime = par.tutorial ? 3000 : 2000
     var data = {
       parameters: par,
@@ -41,7 +41,8 @@ jsPsych.plugins["pong"] = (function() {
       this.y = y
       this.size = 20
       this.isBackground = isBackground
-
+      //hide it if it's the tutorial's background ball
+      this.hidden = par.tutorial ? isBackground : false
       //initialize with random velocity but par.ballSpeed speed
       //velocity can't be entirely random: we don't want it to close to vertical at the beginning; constrain it to +-(angles between pi/4 and -pi/4)
       var random1orNeg1 = Math.random() > 0.5 ? -1 : 1
@@ -119,6 +120,12 @@ jsPsych.plugins["pong"] = (function() {
           }
           //if it's half the total bounces and the question hasn't been asked, ask it:
           if(this.bouncesOnHumanSideSoFar >= Math.floor(maxBouncesOnHumanSide / 2) && data.collected.guess == ''){controller.askQuestion()}
+
+          //if it's the tutorial, introduce a new ball at maxBouncesOnHumanSide / 4
+          if(this.bouncesOnHumanSideSoFar >= Math.floor(maxBouncesOnHumanSide / 4) && model.backgroundBall.hidden){
+            alert("Each real level will have a background ball. You can ignore this as much as you want; your task is only playing with the target.")
+            model.backgroundBall.hidden = false
+          }
         }
 
         if((ball.isBackground != true) && wall == "right" || paddle === model.hPaddle){
@@ -173,20 +180,23 @@ jsPsych.plugins["pong"] = (function() {
         mctx.closePath()
       }
       this.drawBall = function(theBall){
-        var mctx = this.mainctx
-        var b = theBall
+        if(!theBall.hidden){
+          var mctx = this.mainctx
+          var b = theBall
 
-        mctx.beginPath()
-        mctx.fillStyle = b.color
-        mctx.rect(b.x, b.y, b.size, b.size)
-        mctx.fill()
-        //notify the user where target is for first 2 seconds:
-        if(Date.now() - beginTime < introTextStopTime && !b.isBackground){
-          mctx.fillStyle="white"
-          mctx.font = "13px Courier New"
-          mctx.fillText("target", b.x-10, b.y-10)
-        }
-        mctx.closePath()
+          mctx.beginPath()
+          mctx.fillStyle = b.color
+          mctx.rect(b.x, b.y, b.size, b.size)
+          mctx.fill()
+          //notify the user where target is for first 2 seconds:
+          if(Date.now() - beginTime < introTextStopTime && !b.isBackground){
+            mctx.fillStyle="white"
+            mctx.font = "13px Courier New"
+            mctx.fillText("target", b.x-10, b.y-10)
+          }
+          mctx.closePath()
+      }
+
       }
       this.drawHumanPaddle = function(){
         var mctx = this.mainctx
@@ -455,14 +465,14 @@ jsPsych.plugins["pong"] = (function() {
       //}
     }
 
-    function showTutorialMessages(){
+    function showTutorialMessage(){
       alert("Use the cursor to move the paddle. Yours is the right one and you're playing with the 'target' ball. But the 'target' label will go away soon as to not interfere with gameplay")
     }
 
     function beginGame(){
-      if(par.tutorial){
-        setTimeout(showTutorialMessages, 2300)
-      }
+      /*if(par.tutorial){
+        setTimeout(showTutorialMessage, 2300)
+      }*/
       updateGame()
     }
     var model = new Model();

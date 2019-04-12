@@ -64,7 +64,7 @@ var firstLevel = {
   stimulus:"<p>test</p>",
   ballSpeed: ballSpeeds[0],
   ballColors: getRandomColorPair(),
-  humanPaddleSize:paddleSizes[Math.floor(Math.random()*paddleSizes.length)],
+  humanPaddleSize:paddleSizes[1],//paddleSizes[Math.floor(Math.random()*paddleSizes.length)],
   aiPaddleSize:1,
   gameWidth:500,
   gameHeight:400,
@@ -76,7 +76,7 @@ var firstLevel = {
 }
 var postPracticeQuestion = {
    type:"html-keyboard-response",
-   stimulus: "<p style='color:white'>Practice session over. Ready?</p>"
+   stimulus: "<p style='color:white'>Practice session over. Press any key for the first level</p>"
 
  }
 
