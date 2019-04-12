@@ -96,11 +96,11 @@ var lengthResponse = {
   prompt: "<p style='color:white'>How long did this trial feel? (in seconds)</p>"
 }
 
-var favoriteBall = {
+var fluffQ = {
   type: 'html-button-response',
   stimulus: '',
-  choices: ['Background', 'Target', 'Neither'],
-  prompt: "<p style='color:white'>Which ball was your favorite?</p>"
+  choices: ['Easy', 'Medium', 'Difficult'],
+  prompt: "<p style='color:white'>How hard was the trial?</p>"
 }
 
 var performanceQ = {
@@ -119,7 +119,7 @@ var thankerScreen = {
   type: 'html-keyboard-response',
   stimulus: "<p style='color:white'>Thank you for playing! Please return to Prolific now to finish the study: </p>"
 }
-var loop = {timeline: [genericLevel, lengthResponse, favoriteBall, performanceQ],
+var loop = {timeline: [genericLevel, lengthResponse, fluffQ, performanceQ],
             repetitions: maxTrials
           }
 
