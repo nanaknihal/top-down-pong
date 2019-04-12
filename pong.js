@@ -13,14 +13,17 @@ jsPsych.plugins["pong"] = (function() {
   }
 
   plugin.trial = function(display_element, trial) {
-    document.body.style.cursor="none";
+    document.body.style.cursor="none"
     var par = trial
-    var gameWidth=par.gameWidth, gameHeight=par.gameHeight;
+    var gameWidth=par.gameWidth, gameHeight=par.gameHeight
+    var maxBouncesOnHumanSide = par.tutorial ? 11 : Math.floor(par.ballSpeed/1.7)
+    var introTextStopTime = par.tutorial ? 3000 : 2000
     var data = {
       parameters: par,
       collected: {
         humanScore: 0,
-        aiScore: 0
+        aiScore: 0,
+        guess: ''
       }}
     display_element.innerHTML =
     "<div id='gameContainer' style='position: absolute; top: 50%; left: 50%; margin-right:50%; transform: translate(-50%, -50%); height: " + gameHeight + "px; width: " + gameWidth + "px; vertical-align: middle'>" +
@@ -29,7 +32,7 @@ jsPsych.plugins["pong"] = (function() {
     "<canvas id='mainCanvas' height='" + gameHeight + "' width = '" + gameWidth + "'></canvas>"
     +
     "<!--overlay canvas that doesn't need to be refreshed constantly:-->" +
-    "<canvas id='overlay' style='position:absolute; left: 0; top: 0; z-index:4' height='" + gameHeight + "' width = '" + gameWidth + "'></canvas>"
+    "<canvas id='overlay' style='position:absolute; left: 0; top: 0; z-index:4' height='" + (gameHeight*1.2) + "' width = '" + gameWidth + "'></canvas>"
 
     var beginTime = Date.now()
     function Ball(x,y, isBackground){
@@ -47,9 +50,9 @@ jsPsych.plugins["pong"] = (function() {
       this.yVelocity = random1orNeg1 * Math.sin(randomAngleInRange)*par.ballSpeed
 
       if(isBackground === true){
-        this.color = par.bgBallColor
+        this.color = par.ballColors[1]
       } else{
-        this.color = par.targetBallColor;
+        this.color = par.ballColors[0]
       }
       this.randomlyShiftDirection = function(){
         //maintain speed but randomly increment velocity
@@ -113,6 +116,8 @@ jsPsych.plugins["pong"] = (function() {
           ball.xVelocity *=-1
           if(ball.isBackground != true){
             controller.aiWon();
+            //if it's half the total bounces, ask the question:
+            if(this.bouncesOnHumanSideSoFar >= maxBouncesOnHumanSide / 2){controller.askQuestion()}
           }
         }
 
@@ -176,7 +181,7 @@ jsPsych.plugins["pong"] = (function() {
         mctx.rect(b.x, b.y, b.size, b.size)
         mctx.fill()
         //notify the user where target is for first 2 seconds:
-        if(Date.now() - beginTime < 2000 && !b.isBackground){
+        if(Date.now() - beginTime < introTextStopTime && !b.isBackground){
           mctx.fillStyle="white"
           mctx.font = "13px Courier New"
           mctx.fillText("target", b.x-10, b.y-10)
@@ -216,22 +221,45 @@ jsPsych.plugins["pong"] = (function() {
         this.drawHumanPaddle()
         this.drawAIPaddle()
       }
+      //function to ask the user which ball is going faster
+      this.askQuestion = function(){
+        var overlay = document.getElementById("overlay")
+        var octx = overlay.getContext("2d")
+
+        octx.beginPath()
+        octx.fillStyle = "pink"
+        octx.textAlign = "center"
+        octx.font = "17px Courier New"
+
+        if(par.tutorial){alert('Now, please press the key corresponding to which ball is moving faster, as soon as you can make a guess. 1=target 2=background 3=neither')}
+        octx.fillText("1=target 2=background 3=neither", gameWidth/2, overlay.height*0.88)
+        //"press a key corresponding to which ball is moving faster: 1=target, 2=background, 3=neither"
+        octx.closePath()
+      }
+
+      this.removeQuestion = function(){
+        //for now, just clear the context since nothing is occupying it other than the question
+        var overlay = document.getElementById("overlay")
+        var octx = overlay.getContext("2d")
+        octx.clearRect(0,0,overlay.width,overlay.height)
+      }
 
 
     }
     function Controller(){
       if(par.keyboardControl){
         document.addEventListener("keydown", arrowKeyPressed)
-    }
-    if(par.mouseControl){
-      //when the mouse is moved, tell the human paddle to change position
-      document.addEventListener("mousemove", mouseMoved)
-    }
+      }
+      if(par.mouseControl){
+        //when the mouse is moved, tell the human paddle to change position
+        document.addEventListener("mousemove", mouseMoved)
+      }
 
 
       //create a custom event to move the paddle. to be consistent, ai and human paddles alike should be moved by events
       //there could be multiple events on a setInterval so the motion is more variable, not just linear
       document.addEventListener("aiMove", aiMoved)
+
 
       this.AI = {
         paddle: model.aiPaddle,
@@ -275,6 +303,35 @@ jsPsych.plugins["pong"] = (function() {
       this.aiWon = function(){
         data.collected.aiScore++
       }
+
+      this.askQuestion = function(){
+        document.addEventListener('keydown', controller.registerAnswer)
+        view.askQuestion()
+        }
+
+      this.registerAnswer = function(event){
+        switch(event.key){
+          case '1':
+            data.collected.guess = '1'
+            document.removeEventListener('keydown', controller.registerAnswer)
+            view.removeQuestion()
+            alert(data.collected.guess)
+            break;
+          case '2':
+            data.collected.guess = '2'
+            document.removeEventListener('keydown', controller.registerAnswer)
+            view.removeQuestion()
+            alert(data.collected.guess)
+            break;
+          case '3':
+            data.collected.guess = '3'
+            document.removeEventListener('keydown', controller.registerAnswer)
+            view.removeQuestion()
+            alert(data.collected.guess)
+            break;
+        }
+      }
+
     }
 
     function HumanPaddle(yCoord, width, length){
@@ -378,12 +435,17 @@ jsPsych.plugins["pong"] = (function() {
           model.update()
           view.update()
           controller.AI.meetBall()
-          //end the game and ask the Ultimate Question after sufficient player-side bounces:
-          if(model.bouncesOnHumanSideSoFar  >= 6){
+          /*end the game after sufficient player-side bounces - note if efficiency is an issue, the
+          following if statement can be moved to Controller as part of a new function controller.handleBounce(),
+          which could be called from the wall==right condition in  model.handleCollision().
+          This works currently and is organized so there's no need to change it*/
+          if(model.bouncesOnHumanSideSoFar  >= maxBouncesOnHumanSide){
             delete(model)
             delete(view)
             delete(controller)
+            document.body.style.cursor="default"
             jsPsych.finishTrial(data)
+
             //this will clear any remnant event listeners:
             document.removeEventListener("keydown", arrowKeyPressed)
             document.removeEventListener("mousemove", mouseMoved)
@@ -395,7 +457,14 @@ jsPsych.plugins["pong"] = (function() {
       //}
     }
 
+    function showTutorialMessages(){
+      alert("Use the cursor to move the paddle. Yours is the right one and you're playing with the 'target' ball. But the 'target' label will go away soon as to not interfere with gameplay")
+    }
+
     function beginGame(){
+      if(par.tutorial){
+        setTimeout(showTutorialMessages, 2300)
+      }
       updateGame()
     }
     var model = new Model();
