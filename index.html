@@ -109,7 +109,7 @@ var performanceQ = {
     prompt: "<p style='color:white'>How well do you think you did?</p>"
 }
 
-var loop = {timeline: [genericLevel, response, lengthResponse, favoriteBall, performanceQ],
+var loop = {timeline: [genericLevel, lengthResponse, favoriteBall, performanceQ],
             repetitions: maxTrials
           }
 
@@ -117,7 +117,7 @@ timeline.push(welcome)
 timeline.push(firstLevel)
 timeline.push(postPracticeQuestion)
 timeline.push(loop)
-timeline.push(hypothesisGuess)
+.//timeline.push(hypothesisGuess)
 
 /*timeline.push(level)
 timeline.push(response)
