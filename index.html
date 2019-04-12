@@ -37,6 +37,11 @@ function getRandomColorPair(){
   return goodColors[Math.floor(Math.random()*goodColors.length)]
 }
 
+//returns a random paddle size, but each subject only gets 10 of each size
+function getRandomPaddleSize(){
+
+}
+
 var welcome = {
   type:"html-keyboard-response",
   stimulus:"<img src='welcome.png' height='" + gameHeight + "' style='position: absolute; top: 50%; left: 50%; margin-right:50%; transform: translate(-50%, -50%);></img>'<br />",
@@ -45,6 +50,36 @@ var welcome = {
 }
 
 var genericLevel = {
+  type:"pong",
+  stimulus:"<p>test</p>",
+  ballSpeed: ballSpeeds[Math.floor(Math.random()*ballSpeeds.length)],
+  ballColors: getRandomColorPair(),
+  humanPaddleSize:paddleSizes[Math.floor(Math.random()*paddleSizes.length)],
+  aiPaddleSize:1,
+  gameWidth:500,
+  gameHeight:400,
+  randomBackgroundBallMotion: false,
+  keyboardControl: false,
+  mouseControl: true
+
+}
+
+var tutorialLevel1 = {
+  type:"pong",
+  stimulus:"<p>test</p>",
+  ballSpeed: ballSpeeds[Math.floor(Math.random()*ballSpeeds.length)],
+  ballColors: getRandomColorPair(),
+  humanPaddleSize:paddleSizes[Math.floor(Math.random()*paddleSizes.length)],
+  aiPaddleSize:1,
+  gameWidth:500,
+  gameHeight:400,
+  randomBackgroundBallMotion: false,
+  keyboardControl: false,
+  mouseControl: true
+
+}
+
+var tutorialLevel2 = {
   type:"pong",
   stimulus:"<p>test</p>",
   ballSpeed: ballSpeeds[Math.floor(Math.random()*ballSpeeds.length)],
@@ -74,12 +109,18 @@ var firstLevel = {
   tutorial: true
 
 }
-var postPracticeQuestion = {
+
+var postTutorialPrompt = {
    type:"html-keyboard-response",
-   stimulus: "<p style='color:white'>Practice session over. Press any key for the first level</p>"
+   stimulus: "<p style='color:white'>Tutorial over. Press any key for the first level</p>"
 
  }
 
+ var nextTutorialPrompt = {
+    type:"html-keyboard-response",
+    stimulus: "<p style='color:white'>Good, let's do a practice level. Press any key to continue (remember: the target is the ball to play with.</p>"
+
+  }
 /*
 var response = {
   type: 'html-button-response',
@@ -124,9 +165,16 @@ var loop = {timeline: [genericLevel, lengthResponse, fluffQ, performanceQ],
           }
 
 timeline.push(welcome)
+
 timeline.push(firstLevel)
-timeline.push(postPracticeQuestion)
+timeline.push(nextTutorialPrompt)
+timeline.push(tutorialLevel1)
+timeline.push(nextTutorialPrompt)
+timeline.push(tutorialLevel2)
+timeline.push(postTutorialPrompt)
+
 timeline.push(loop)
+
 timeline.push(hypothesisGuess)
 timeline.push(thankerScreen)
 
