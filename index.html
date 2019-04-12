@@ -73,9 +73,9 @@ var welcome = {
 var genericLevel = {
   type:"pong",
   stimulus:"<p>test</p>",
-  ballSpeed: ballSpeeds[Math.floor(Math.random()*ballSpeeds.length)],
-  ballColors: getRandomColorPair(),
-  humanPaddleSize:paddleSizes[Math.floor(Math.random()*paddleSizes.length)],
+  ballSpeed: function() { return ballSpeeds[Math.floor(Math.random()*ballSpeeds.length)] },
+  ballColors: getRandomColorPair,
+  humanPaddleSize: getRandomPaddleSize,
   aiPaddleSize:1,
   gameWidth:500,
   gameHeight:400,
@@ -185,7 +185,7 @@ var loop = {timeline: [genericLevel, lengthResponse, fluffQ, performanceQ],
             repetitions: maxTrials
           }
 
-timeline.push(welcome)
+/*timeline.push(welcome)
 
 timeline.push(firstLevel)
 timeline.push(nextTutorialPrompt)
@@ -193,7 +193,7 @@ timeline.push(tutorialLevel1)
 timeline.push(nextTutorialPrompt)
 timeline.push(tutorialLevel2)
 timeline.push(postTutorialPrompt)
-
+*/
 timeline.push(loop)
 
 timeline.push(hypothesisGuess)

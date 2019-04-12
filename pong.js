@@ -4,11 +4,10 @@ jsPsych.plugins["pong"] = (function() {
   plugin.info = {
     name: 'pong',
     parameters: {
-      //humanPaddleSize:
-      /*levelNumber: {
-        type:jsPsych.plugins.parameterType.INT
-      },
-      */
+      humanPaddleSize:{},
+      ballSpeed:{},
+      ballColors:{},
+
     }
   }
 
