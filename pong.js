@@ -266,7 +266,7 @@ jsPsych.plugins["pong"] = (function() {
         octx.fillText("2", secondBoxX + boxToTextDist, questionHeight+textOffsetHeight)
 
         octx.beginPath()
-        octx.fillStyle = '#797979'
+        octx.fillStyle = 'white'//'#797979'
         octx.rect(thirdBoxX, questionHeight, model.backgroundBall.size, model.backgroundBall.size)
         octx.fill()
         octx.fillText("neither 3", thirdBoxX + boxToTextDist + 25, questionHeight+textOffsetHeight)
