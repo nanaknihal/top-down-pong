@@ -18,6 +18,7 @@ jsPsych.plugins["pong"] = (function() {
     var gameWidth=par.gameWidth, gameHeight=par.gameHeight
     var maxBouncesOnHumanSide = par.tutorial ? 21 : Math.floor(par.ballSpeed/1.7)
     var introTextStopTime = 3000
+    var questionAsked = false
     var questionAnswered = false
     var bouncesSinceQuestionAsked = 0
     var data = {
@@ -121,14 +122,7 @@ jsPsych.plugins["pong"] = (function() {
             controller.aiWon();
           }
           //if it's half the total bounces and the question hasn't been asked, ask it every so often (at every 5th bounce)
-          if(this.bouncesOnHumanSideSoFar >= Math.floor(maxBouncesOnHumanSide / 2) && !questionAnswered){
-
-            if(bouncesSinceQuestionAsked == 0){
-              controller.askQuestion()
-            } else {
-              bouncesSinceQuestionAsked++
-            }
-          }
+          if(this.bouncesOnHumanSideSoFar >= Math.floor(maxBouncesOnHumanSide / 2) && !questionAsked){controller.askQuestion(); questionAsked=true}
 
           //if it's the tutorial, introduce a new ball at maxBouncesOnHumanSide / 4
           if(this.bouncesOnHumanSideSoFar >= Math.floor(maxBouncesOnHumanSide / 4) && model.backgroundBall.hidden){
