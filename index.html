@@ -78,12 +78,15 @@ var postPracticeQuestion = {
    stimulus: "<p style='color:white'>Practice session over. Ready?</p>"
 
  }
+
+/*
 var response = {
   type: 'html-button-response',
   stimulus: '',
   choices: ['Background', 'Target', 'Neither'],
   prompt: "<p style='color:white'>Which ball was faster?</p>"
 }
+*/
 
 var lengthResponse = {
   type: 'html-button-response',
@@ -110,10 +113,11 @@ var loop = {timeline: [genericLevel, response, lengthResponse, favoriteBall, per
             repetitions: maxTrials
           }
 
-//timeline.push(welcome)
-//timeline.push(firstLevel)
-//timeline.push(postPracticeQuestion)
+timeline.push(welcome)
+timeline.push(firstLevel)
+timeline.push(postPracticeQuestion)
 timeline.push(loop)
+timeline.push(hypothesisGuess)
 
 /*timeline.push(level)
 timeline.push(response)

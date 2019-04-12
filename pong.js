@@ -116,9 +116,9 @@ jsPsych.plugins["pong"] = (function() {
           ball.xVelocity *=-1
           if(ball.isBackground != true){
             controller.aiWon();
-            //if it's half the total bounces, ask the question:
-            if(this.bouncesOnHumanSideSoFar >= Math.floor(maxBouncesOnHumanSide / 2)){controller.askQuestion()}
           }
+          //if it's half the total bounces and the question hasn't been asked, ask it:
+          if(this.bouncesOnHumanSideSoFar >= Math.floor(maxBouncesOnHumanSide / 2) && data.collected.guess == ''){controller.askQuestion()}
         }
 
         if((ball.isBackground != true) && wall == "right" || paddle === model.hPaddle){
