@@ -18,6 +18,8 @@ jsPsych.plugins["pong"] = (function() {
     var gameWidth=par.gameWidth, gameHeight=par.gameHeight
     var maxBouncesOnHumanSide = par.tutorial ? 21 : Math.floor(par.ballSpeed/1.7)
     var introTextStopTime = 3000
+    var questionAnswered = false
+    var bouncesSinceQuestionAsked = 0
     var data = {
       parameters: par,
       collected: {
@@ -118,8 +120,15 @@ jsPsych.plugins["pong"] = (function() {
           if(ball.isBackground != true){
             controller.aiWon();
           }
-          //if it's half the total bounces and the question hasn't been asked, ask it:
-          if(this.bouncesOnHumanSideSoFar >= Math.floor(maxBouncesOnHumanSide / 2) && data.collected.guess == ''){controller.askQuestion()}
+          //if it's half the total bounces and the question hasn't been asked, ask it every so often (at every 5th bounce)
+          if(this.bouncesOnHumanSideSoFar >= Math.floor(maxBouncesOnHumanSide / 2) && !questionAnswered){
+
+            if(bouncesSinceQuestionAsked == 0 || bouncesSinceQuestionAsked % 5 == 0){
+              controller.askQuestion()
+            } else {
+              bouncesSinceQuestionAsked++
+            }
+          }
 
           //if it's the tutorial, introduce a new ball at maxBouncesOnHumanSide / 4
           if(this.bouncesOnHumanSideSoFar >= Math.floor(maxBouncesOnHumanSide / 4) && model.backgroundBall.hidden){
@@ -241,7 +250,7 @@ jsPsych.plugins["pong"] = (function() {
         octx.textAlign = "center"
         octx.font = "17px Courier New"
 
-        if(par.tutorial){alert("Now, please press the key corresponding to which ball is moving faster, as soon as you can make a guess, but don't stop playing...")}
+        if(par.tutorial){alert("Now, please press the key corresponding to which ball is moving faster, as soon as you can make a guess, but don't stop playing. HINT: keep your left hand on the 1,2, and 3 keys")}
         octx.fillText("Choose the faster ball:", gameWidth/2, overlay.height*0.22)
         questionHeight = overlay.height*0.85
 
@@ -351,16 +360,19 @@ jsPsych.plugins["pong"] = (function() {
           case '1':
             data.collected.guess = '1'
             document.removeEventListener('keydown', controller.registerAnswer)
+            questionAnswered = true
             view.removeQuestion()
             break;
           case '2':
             data.collected.guess = '2'
             document.removeEventListener('keydown', controller.registerAnswer)
+            questionAnswered = true
             view.removeQuestion()
             break;
           case '3':
             data.collected.guess = '3'
             document.removeEventListener('keydown', controller.registerAnswer)
+            questionAnswered = true
             view.removeQuestion()
             break;
         }
