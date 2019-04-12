@@ -16,7 +16,7 @@ jsPsych.plugins["pong"] = (function() {
     document.body.style.cursor="none"
     var par = trial
     var gameWidth=par.gameWidth, gameHeight=par.gameHeight
-    var maxBouncesOnHumanSide = par.tutorial ? 2/*21*/ : Math.floor(par.ballSpeed/1.7)
+    var maxBouncesOnHumanSide = par.tutorial ? 21 : Math.floor(par.ballSpeed/1.7)
     var introTextStopTime = 3000
     var data = {
       parameters: par,
