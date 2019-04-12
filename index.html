@@ -25,10 +25,11 @@ var timeStarted = new Date().valueOf()
 var gameDuration = 15*60*1000
 var gameWidth = 960, gameHeight = 600
 var numTrials = 0
-var maxTrials = 3
+var maxTrials = 30 //make sure this is divisible by 3 for paddle size randomization!
 var timeline = []
 var colorBlindSafeColorPairs = [['white', 'grey'], ['white', 'red'], ['white', 'green'], ['white', 'blue'], ['white', 'pink'], ['grey', 'white'], ['grey', 'red'], ['grey', 'blue'], ['red', 'white'], ['red', 'blue'], ['green', 'white'], ['green', 'blue'], ['blue', 'white'], ['blue', 'white'], ['blue', 'red'], ['blue', 'pink'], ['blue', 'grey'], ['chartreuse', 'grey'], ['chartreuse', 'yellow'], ['chartreuse', 'white'], ['chartreuse', 'blue'], ['chartreuse', 'grey'], ['magenta', 'white'], ['magenta', 'grey'], ['magenta', 'yellow'], ['magenta', 'red'], ['cyan', 'grey'], ['cyan', 'white'], ['white', 'cyan'], ['grey', 'cyan'], ['grey', 'chartreuse'], ['yellow', 'chartreuse'], ['white', 'chartreuse'], ['blue', 'chartreuse'], ['white', 'magenta'], ['grey', 'magenta'], ['yellow', 'magenta'], ['red', 'magenta']]
 var paddleSizes = [0.5, 1.2, 1.9]
+var usedPaddleSizes = []
 var ballSpeeds = [13, 15, 17]
 //these have similar levels of contrast as each other, to a black background. Because of this, they don't appear to be moving different speeds.
 var goodColors = [['#3077FF', 'mediumorchid'], ['mediumorchid', '#3077FF'], ['#00AAAA', '#BB00BB'], ['#AA00AA', '#00AAAA'], ['#a1a69f', '#1eabf6'], ['#1eabf6', '#a1a69f']]
@@ -37,8 +38,28 @@ function getRandomColorPair(){
   return goodColors[Math.floor(Math.random()*goodColors.length)]
 }
 
-//returns a random paddle size, but each subject only gets 10 of each size
+//returns a random paddle size, but each subject only gets only numTrials/3 of each paddle
 function getRandomPaddleSize(){
+  var generate = true
+  var numGenerates = 0
+  while(generate){
+    console.log(usedPaddleSizes)
+    numGenerates++
+    var paddleSize = paddleSizes[Math.floor(Math.random()*paddleSizes.length)]
+    var timesSizeUsed = 0
+    //count number of times it's been used yet:
+    for(var i = 0; i < usedPaddleSizes.length; i++){
+      if(usedPaddleSizes[i] == paddleSize){timesSizeUsed++}
+    }
+
+    //stop condition:
+    if(timesSizeUsed < numTrials/3 || numGenerates > 400){
+      generate = false
+      usedPaddleSizes.push()
+      return paddleSize
+    }
+  }
+
 
 }
 
@@ -69,7 +90,7 @@ var tutorialLevel1 = {
   stimulus:"<p>test</p>",
   ballSpeed: ballSpeeds[Math.floor(Math.random()*ballSpeeds.length)],
   ballColors: getRandomColorPair(),
-  humanPaddleSize:paddleSizes[Math.floor(Math.random()*paddleSizes.length)],
+  humanPaddleSize:paddleSizes[Math.floor(Math.random()*paddleSizes.length)], //don't use getRandomPaddleSize
   aiPaddleSize:1,
   gameWidth:500,
   gameHeight:400,
@@ -84,7 +105,7 @@ var tutorialLevel2 = {
   stimulus:"<p>test</p>",
   ballSpeed: ballSpeeds[Math.floor(Math.random()*ballSpeeds.length)],
   ballColors: getRandomColorPair(),
-  humanPaddleSize:paddleSizes[Math.floor(Math.random()*paddleSizes.length)],
+  humanPaddleSize:paddleSizes[Math.floor(Math.random()*paddleSizes.length)], //don't use getRandomPaddleSize
   aiPaddleSize:1,
   gameWidth:500,
   gameHeight:400,
@@ -99,7 +120,7 @@ var firstLevel = {
   stimulus:"<p>test</p>",
   ballSpeed: ballSpeeds[0],
   ballColors: getRandomColorPair(),
-  humanPaddleSize:paddleSizes[1],//paddleSizes[Math.floor(Math.random()*paddleSizes.length)],
+  humanPaddleSize:paddleSizes[1],
   aiPaddleSize:1,
   gameWidth:500,
   gameHeight:400,
@@ -118,7 +139,7 @@ var postTutorialPrompt = {
 
  var nextTutorialPrompt = {
     type:"html-keyboard-response",
-    stimulus: "<p style='color:white'>Good, let's do a practice level. Press any key to continue (remember: the target is the ball to play with.</p>"
+    stimulus: "<p style='color:white'>Good, let's do a practice level. Press any key to continue (remember: the target is the ball to play with).</p>"
 
   }
 /*
