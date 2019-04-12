@@ -16,7 +16,7 @@ jsPsych.plugins["pong"] = (function() {
     document.body.style.cursor="none"
     var par = trial
     var gameWidth=par.gameWidth, gameHeight=par.gameHeight
-    var maxBouncesOnHumanSide = par.tutorial ? 21 : Math.floor(par.ballSpeed/1.7)
+    var maxBouncesOnHumanSide = par.tutorial ? 2/*21*/ : Math.floor(par.ballSpeed/1.7)
     var introTextStopTime = 3000
     var data = {
       parameters: par,
@@ -237,13 +237,37 @@ jsPsych.plugins["pong"] = (function() {
         var octx = overlay.getContext("2d")
 
         octx.beginPath()
-        octx.fillStyle = "pink"
+        octx.fillStyle = "white"
         octx.textAlign = "center"
         octx.font = "17px Courier New"
 
         if(par.tutorial){alert("Now, please press the key corresponding to which ball is moving faster, as soon as you can make a guess, but don't stop playing...")}
         octx.fillText("Choose the faster ball:", gameWidth/2, overlay.height*0.22)
-        octx.fillText("1=target 2=background 3=neither", gameWidth/2, overlay.height*0.88)
+        questionHeight = overlay.height*0.85
+
+        var boxToTextDist = 50
+        var firstBoxX = gameWidth/4
+        var secondBoxX = gameWidth/2
+        var thirdBoxX = gameWidth*0.75
+        var textOffsetHeight = 15
+        octx.beginPath()
+        octx.fillStyle = model.ball.color
+        octx.rect(firstBoxX, questionHeight, model.ball.size, model.ball.size)
+        octx.fill()
+        octx.fillText("1", firstBoxX + boxToTextDist, questionHeight + textOffsetHeight)
+
+        octx.beginPath()
+        octx.fillStyle = model.backgroundBall.color
+        octx.rect(secondBoxX, questionHeight, model.backgroundBall.size, model.backgroundBall.size)
+        octx.fill()
+        octx.fillText("2", secondBoxX + boxToTextDist, questionHeight+textOffsetHeight)
+
+        octx.beginPath()
+        octx.fillStyle = 'darkgrey'
+        octx.fillText("neither3", thirdBoxX + boxToTextDist + 25, questionHeight+textOffsetHeight)
+
+        octx.closePath()
+
         //"press a key corresponding to which ball is moving faster: 1=target, 2=background, 3=neither"
         octx.closePath()
       }
