@@ -17,7 +17,7 @@ jsPsych.plugins["pong"] = (function() {
     var par = trial
     var gameWidth=par.gameWidth, gameHeight=par.gameHeight
     var maxBouncesOnHumanSide = par.tutorial ? 21 : Math.floor(par.ballSpeed/1.7)
-    var introTextStopTime = par.tutorial ? 3000
+    var introTextStopTime = 3000
     var data = {
       parameters: par,
       collected: {
@@ -241,7 +241,7 @@ jsPsych.plugins["pong"] = (function() {
         octx.textAlign = "center"
         octx.font = "17px Courier New"
 
-        if(par.tutorial){alert('Now, please press the key corresponding to which ball is moving faster, as soon as you can make a guess. 1=target 2=background 3=neither')}
+        if(par.tutorial){alert("Now, please press the key corresponding to which ball is moving faster, as soon as you can make a guess, but don't stop playing...")}
         octx.fillText("Choose the faster ball:", gameWidth/2, overlay.height*0.22)
         octx.fillText("1=target 2=background 3=neither", gameWidth/2, overlay.height*0.88)
         //"press a key corresponding to which ball is moving faster: 1=target, 2=background, 3=neither"
