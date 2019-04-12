@@ -51,11 +51,12 @@ function getRandomPaddleSize(){
     for(var i = 0; i < usedPaddleSizes.length; i++){
       if(usedPaddleSizes[i] == paddleSize){timesSizeUsed++}
     }
-
+    console.log(timesSizeUsed)
     //stop condition:
-    if(timesSizeUsed < numTrials/3 || numGenerates > 400){
+    if(timesSizeUsed < maxTrials/3 || numGenerates > 400){
+      console.log('d')
       generate = false
-      usedPaddleSizes.push()
+      usedPaddleSizes.push(paddleSize)
       return paddleSize
     }
   }
