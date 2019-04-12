@@ -115,6 +115,10 @@ var hypothesisGuess = {
   questions: [{prompt: "<p style='color:white'>What do you think this experiment is about? What's your best guess of the hypothesis?</p>", rows: 5, columns: 40}],
 }
 
+var thankerScreen = {
+  type: 'html-keyboard-response',
+  stimulus: "<p style='color:white'>Thank you for playing! Please return to Prolific now to finish the study: </p>"
+}
 var loop = {timeline: [genericLevel, lengthResponse, favoriteBall, performanceQ],
             repetitions: maxTrials
           }
