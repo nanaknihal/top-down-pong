@@ -123,7 +123,7 @@ jsPsych.plugins["pong"] = (function() {
           //if it's half the total bounces and the question hasn't been asked, ask it every so often (at every 5th bounce)
           if(this.bouncesOnHumanSideSoFar >= Math.floor(maxBouncesOnHumanSide / 2) && !questionAnswered){
 
-            if(bouncesSinceQuestionAsked == 0 || bouncesSinceQuestionAsked % 5 == 0){
+            if(bouncesSinceQuestionAsked == 0){
               controller.askQuestion()
             } else {
               bouncesSinceQuestionAsked++
