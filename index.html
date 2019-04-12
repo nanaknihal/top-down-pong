@@ -3,6 +3,7 @@
 <head>
   <title>PONG</title>
   <script src="jspsych-6.0.3/jspsych.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-survey-text.js"></script>
   <script src="jspsych-6.0.3/plugins/jspsych-html-keyboard-response.js"></script>
   <script src="jspsych-6.0.3/plugins/jspsych-html-slider-response.js"></script>
   <script src="jspsych-6.0.3/plugins/jspsych-html-button-response.js"></script>
@@ -109,6 +110,11 @@ var performanceQ = {
     prompt: "<p style='color:white'>How well do you think you did?</p>"
 }
 
+var hypothesisGuess = {
+  type: 'survey-text',
+  questions: [{prompt: "What do you think this experiment is about? What's your best guess of the hypothesis?", rows: 5, columns: 40}],
+}
+
 var loop = {timeline: [genericLevel, lengthResponse, favoriteBall, performanceQ],
             repetitions: maxTrials
           }
@@ -117,7 +123,7 @@ timeline.push(welcome)
 timeline.push(firstLevel)
 timeline.push(postPracticeQuestion)
 timeline.push(loop)
-.//timeline.push(hypothesisGuess)
+timeline.push(hypothesisGuess)
 
 /*timeline.push(level)
 timeline.push(response)
